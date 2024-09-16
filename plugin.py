@@ -10,9 +10,9 @@ import time
 import re
 from urllib.parse import urlparse, urlunsplit
 
-class RepostCounter(callbacks.Plugin):
+class RepostCount(callbacks.Plugin):
     def __init__(self, irc):
-        self.__parent = super(RepostCounter, self)
+        self.__parent = super(RepostCount, self)
         self.__parent.__init__(irc)
         self.link_database = {}
         self.filename = conf.supybot.directories.data.dirize(self.name() + '.db')
@@ -79,8 +79,8 @@ class RepostCounter(callbacks.Plugin):
                 else:
                     self.link_database[clean_url] = (nick, current_time)
 
-Class = RepostCounter
+Class = RepostCount
 
-conf.registerPlugin('RepostCounter')
-conf.registerChannelValue(conf.supybot.plugins.RepostCounter, 'channel',
-    registry.String('', """The channel where the RepostCounter should be active."""))
+conf.registerPlugin('RepostCount')
+conf.registerChannelValue(conf.supybot.plugins.RepostCount, 'channel',
+    registry.String('', """The channel where the RepostCount should be active."""))
