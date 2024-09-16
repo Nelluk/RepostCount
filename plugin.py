@@ -99,30 +99,38 @@ class RepostCount(callbacks.Plugin):
         self.log.debug(f"link_database: {pprint.pformat(self.link_database)}")
         self.log.debug(f"user_repost_count: {pprint.pformat(self.user_repost_count)}")
 
-    def reposters(self, irc, msg, args):
-        """takes no arguments
+    def reposters(self, irc, msg, args, nick=None):
+        """[<nick>]
 
-        Shows the top 15 reposters leaderboard.
+        Shows the top 15 reposters leaderboard. If <nick> is provided, shows that user's repost count and rank.
         """
         if not self.user_repost_count:
-            irc.reply("No reposts have been recorded yet.")
+            irc.reply("No reposts have been recorded yet.", prefixNick=False)
             return
 
         # Sort users by repost count in descending order
         sorted_reposters = sorted(self.user_repost_count.items(), key=lambda x: x[1], reverse=True)
 
-        # Get the top 15 reposters
-        top_reposters = sorted_reposters[:15]
+        if nick:
+            if nick in self.user_repost_count:
+                count = self.user_repost_count[nick]
+                rank = next(i for i, (user, _) in enumerate(sorted_reposters, 1) if user == nick)
+                irc.reply(f"{nick} has caused {count} repost{'s' if count != 1 else ''}, currently ranked {rank} among reposters.", prefixNick=False)
+            else:
+                irc.reply(f"{nick} has not caused any reposts.", prefixNick=False)
+        else:
+            # Get the top 15 reposters
+            top_reposters = sorted_reposters[:15]
 
-        # Format the leaderboard
-        leaderboard = ["Top 15 Reposters:"]
-        for user, count in top_reposters:
-            leaderboard.append(f"{user}:{count}")
+            # Format the leaderboard
+            leaderboard = ["Top 15 Reposters:"]
+            for user, count in top_reposters:
+                leaderboard.append(f"{user}:{count}")
 
-        # Join the leaderboard entries and reply
-        irc.reply(" ".join(leaderboard), prefixNick=False)
+            # Join the leaderboard entries and reply
+            irc.reply(" ".join(leaderboard), prefixNick=False)
 
-    reposters = wrap(reposters)
+    reposters = wrap(reposters, [optional('nick')])
 
 Class = RepostCount
 
