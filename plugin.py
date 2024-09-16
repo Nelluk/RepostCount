@@ -120,7 +120,7 @@ class RepostCount(callbacks.Plugin):
             leaderboard.append(f"{user}:{count}")
 
         # Join the leaderboard entries and reply
-        irc.reply(" ".join(leaderboard))
+        irc.reply(" ".join(leaderboard), prefixNick=False)
 
     reposters = wrap(reposters)
 
