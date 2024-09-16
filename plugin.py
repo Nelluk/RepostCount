@@ -54,14 +54,23 @@ class RepostCount(callbacks.Plugin):
 
     def doPrivmsg(self, irc, msg):
         channel = msg.args[0]
+        self.log.debug(f"Processing message in channel: {channel}")
+        self.log.debug(f"Registry channel value: {self.registryValue('channel')}")
+        
         if irc.isChannel(channel) and channel == self.registryValue('channel'):
             text = msg.args[1]
             url = self._extract_url(text)
+            self.log.debug(f"Extracted URL: {url}")
+            
             if url:
                 self._purge_old_links()
                 clean_url = self._strip_url_params(url)
                 nick = msg.nick
                 current_time = time.time()
+
+                self.log.debug(f"Clean URL: {clean_url}")
+                self.log.debug(f"Nick: {nick}")
+                self.log.debug(f"Current time: {current_time}")
 
                 # Debug log: Print the current link_database
                 self.log.debug("Current link_database:")
@@ -72,8 +81,12 @@ class RepostCount(callbacks.Plugin):
                 self.log.debug(pprint.pformat(self.user_repost_count))
 
                 if clean_url in self.link_database:
+                    self.log.debug(f"URL found in link_database")
                     original_poster, post_time = self.link_database[clean_url]
+                    self.log.debug(f"Original poster: {original_poster}, Post time: {post_time}")
+                    
                     if nick != original_poster:
+                        self.log.debug(f"Repost detected")
                         time_diff = current_time - post_time
                         hours, remainder = divmod(time_diff, 3600)
                         minutes, _ = divmod(remainder, 60)
@@ -87,8 +100,10 @@ class RepostCount(callbacks.Plugin):
                         self.log.debug("Updated user_repost_count after increment:")
                         self.log.debug(pprint.pformat(self.user_repost_count))
                     else:
+                        self.log.debug(f"Same user posted the link again")
                         self.link_database[clean_url] = (nick, current_time)
                 else:
+                    self.log.debug(f"New URL added to link_database")
                     self.link_database[clean_url] = (nick, current_time)
 
                 # Debug log: Print final link_database after processing
@@ -96,6 +111,8 @@ class RepostCount(callbacks.Plugin):
                 self.log.debug(pprint.pformat(self.link_database))
 
                 self.save_data()
+        else:
+            self.log.debug(f"Message not processed: channel mismatch or not a channel message")
 
     def die(self):
         self.save_data()
