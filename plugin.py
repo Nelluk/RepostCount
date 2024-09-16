@@ -112,10 +112,13 @@ class RepostCount(callbacks.Plugin):
         sorted_reposters = sorted(self.user_repost_count.items(), key=lambda x: x[1], reverse=True)
 
         if nick:
-            if nick in self.user_repost_count:
-                count = self.user_repost_count[nick]
-                rank = next(i for i, (user, _) in enumerate(sorted_reposters, 1) if user == nick)
-                irc.reply(f"{nick} has caused {count} repost{'s' if count != 1 else ''}, currently ranked {rank} among reposters.", prefixNick=False)
+            # Create a case-insensitive dictionary for lookup
+            case_insensitive_dict = {k.lower(): (k, v) for k, v in self.user_repost_count.items()}
+            
+            if nick.lower() in case_insensitive_dict:
+                original_nick, count = case_insensitive_dict[nick.lower()]
+                rank = next(i for i, (user, _) in enumerate(sorted_reposters, 1) if user.lower() == nick.lower())
+                irc.reply(f"{original_nick} has caused {count} repost{'s' if count != 1 else ''}, currently ranked {rank} among reposters.", prefixNick=False)
             else:
                 irc.reply(f"{nick} has not caused any reposts.", prefixNick=False)
         else:
@@ -130,7 +133,7 @@ class RepostCount(callbacks.Plugin):
             # Join the leaderboard entries and reply
             irc.reply(" ".join(leaderboard), prefixNick=False)
 
-    reposters = wrap(reposters, [optional('nick')])
+    reposters = wrap(reposters, [optional('text')])
 
 Class = RepostCount
 
