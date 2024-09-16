@@ -76,7 +76,7 @@ class RepostCount(callbacks.Plugin):
                         
                         self.user_repost_count[nick] = self.user_repost_count.get(nick, 0) + 1
                         
-                        irc.reply(f"That link was already posted by {original_poster} {int(hours)}h {int(minutes)}m ago. Your repost count is now {self.user_repost_count[nick]}.", prefixNick=False)
+                        irc.reply(f"That link was already posted by {original_poster} {int(hours)}h {int(minutes)}m ago. Repost count for {nick} is now {self.user_repost_count[nick]}.", prefixNick=False)
                     else:
                         self.link_database[clean_url] = (nick, current_time)
                 else:
