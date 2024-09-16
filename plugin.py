@@ -9,6 +9,7 @@ import supybot.world as world
 import time
 import re
 from urllib.parse import urlparse, urlunsplit
+from supybot import registry
 
 class RepostCount(callbacks.Plugin):
     def __init__(self, irc):
