@@ -55,12 +55,10 @@ class RepostCount(callbacks.Plugin):
     def doPrivmsg(self, irc, msg):
         channel = msg.args[0]
         self.log.debug(f"Processing message in channel: {channel}")
-        self.log.debug(f"Registry channel value: {self.registryValue('channel')}")
         
         if irc.isChannel(channel) and channel == self.registryValue('channel'):
             text = msg.args[1]
             url = self._extract_url(text)
-            self.log.debug(f"Extracted URL: {url}")
             
             if url:
                 self._purge_old_links()
@@ -68,49 +66,27 @@ class RepostCount(callbacks.Plugin):
                 nick = msg.nick
                 current_time = time.time()
 
-                self.log.debug(f"Clean URL: {clean_url}")
-                self.log.debug(f"Nick: {nick}")
-                self.log.debug(f"Current time: {current_time}")
-
-                # Debug log: Print the current link_database
-                self.log.debug("Current link_database:")
-                self.log.debug(pprint.pformat(self.link_database))
-
-                # Debug log: Print the current user_repost_count
-                self.log.debug("Current user_repost_count:")
-                self.log.debug(pprint.pformat(self.user_repost_count))
-
                 if clean_url in self.link_database:
-                    self.log.debug(f"URL found in link_database")
                     original_poster, post_time = self.link_database[clean_url]
-                    self.log.debug(f"Original poster: {original_poster}, Post time: {post_time}")
                     
                     if nick != original_poster:
-                        self.log.debug(f"Repost detected")
                         time_diff = current_time - post_time
                         hours, remainder = divmod(time_diff, 3600)
                         minutes, _ = divmod(remainder, 60)
                         
                         self.user_repost_count[nick] = self.user_repost_count.get(nick, 0) + 1
                         
-                        irc.reply(f"{nick}: That link was already posted by {original_poster} {int(hours)} hours and {int(minutes)} minutes ago.")
-                        irc.reply(f"Your repost count is now {self.user_repost_count[nick]}.")
-                        
-                        # Debug log: Print updated user_repost_count after increment
-                        self.log.debug("Updated user_repost_count after increment:")
-                        self.log.debug(pprint.pformat(self.user_repost_count))
+                        irc.reply(f"That link was already posted by {original_poster} {int(hours)}h {int(minutes)}m ago. Your repost count is now {self.user_repost_count[nick]}.", prefixNick=False)
                     else:
-                        self.log.debug(f"Same user posted the link again")
                         self.link_database[clean_url] = (nick, current_time)
                 else:
-                    self.log.debug(f"New URL added to link_database")
                     self.link_database[clean_url] = (nick, current_time)
 
-                # Debug log: Print final link_database after processing
-                self.log.debug("Final link_database after processing:")
-                self.log.debug(pprint.pformat(self.link_database))
-
                 self.save_data()
+
+            # Debug logging (only once per message processing)
+            self.log.debug(f"link_database: {pprint.pformat(self.link_database)}")
+            self.log.debug(f"user_repost_count: {pprint.pformat(self.user_repost_count)}")
         else:
             self.log.debug(f"Message not processed: channel mismatch or not a channel message")
 
