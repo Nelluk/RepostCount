@@ -116,8 +116,8 @@ class RepostCount(callbacks.Plugin):
 
         # Format the leaderboard
         leaderboard = ["Top 15 Reposters:"]
-        for i, (user, count) in enumerate(top_reposters, 1):
-            leaderboard.append(f"{i}.{user}:{count}")
+        for user, count in top_reposters:
+            leaderboard.append(f"{user}:{count}")
 
         # Join the leaderboard entries and reply
         irc.reply(" ".join(leaderboard))
