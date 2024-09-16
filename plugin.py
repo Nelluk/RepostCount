@@ -10,6 +10,7 @@ import time
 import re
 from urllib.parse import urlparse, urlunsplit
 from supybot import registry
+import pprint  # Add this import for pretty printing
 
 class RepostCount(callbacks.Plugin):
     def __init__(self, irc):
@@ -62,23 +63,43 @@ class RepostCount(callbacks.Plugin):
                 nick = msg.nick
                 current_time = time.time()
 
+                # Debug log: Print the current link_database
+                self.log.debug("Current link_database:")
+                self.log.debug(pprint.pformat(self.link_database))
+
+                # Debug log: Print the current user_repost_count
+                self.log.debug("Current user_repost_count:")
+                self.log.debug(pprint.pformat(self.user_repost_count))
+
                 if clean_url in self.link_database:
-                    prev_nick, prev_timestamp = self.link_database[clean_url]
-                    hours_ago = (current_time - prev_timestamp) / 3600
-                    
-                    if hours_ago <= 12:
+                    original_poster, post_time = self.link_database[clean_url]
+                    if nick != original_poster:
+                        time_diff = current_time - post_time
+                        hours, remainder = divmod(time_diff, 3600)
+                        minutes, _ = divmod(remainder, 60)
+                        
                         self.user_repost_count[nick] = self.user_repost_count.get(nick, 0) + 1
-                        self.save_data()  # Save after updating the count
                         
-                        response = f"You just reposted {prev_nick}'s link from {hours_ago:.1f} hours ago. "
-                        response += f"You have reposted {self.user_repost_count[nick]} links."
+                        irc.reply(f"{nick}: That link was already posted by {original_poster} {int(hours)} hours and {int(minutes)} minutes ago.")
+                        irc.reply(f"Your repost count is now {self.user_repost_count[nick]}.")
                         
-                        irc.reply(response, prefixNick=False)
+                        # Debug log: Print updated user_repost_count after increment
+                        self.log.debug("Updated user_repost_count after increment:")
+                        self.log.debug(pprint.pformat(self.user_repost_count))
                     else:
-                        # Update the link with the new timestamp and nick
                         self.link_database[clean_url] = (nick, current_time)
                 else:
                     self.link_database[clean_url] = (nick, current_time)
+
+                # Debug log: Print final link_database after processing
+                self.log.debug("Final link_database after processing:")
+                self.log.debug(pprint.pformat(self.link_database))
+
+                self.save_data()
+
+    def die(self):
+        self.save_data()
+        self.__parent.die()
 
 Class = RepostCount
 
