@@ -33,6 +33,17 @@ Before using the plugin, you need to set the channel where it should be active:
 - The plugin will automatically track links posted in the specified channel.
 - It will reply to each link with the number of reposts it has received.
 
+## Commands
+
+### @reposters
+
+Shows the top 15 reposters leaderboard.
+
+Usage:
+```
+@reposters
+```
+
 ## License
 
 This plugin is licensed under the MIT License.
