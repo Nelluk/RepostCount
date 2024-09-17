@@ -61,11 +61,11 @@ class RepostCount(callbacks.Plugin):
                      if current_time - timestamp > 12 * 3600]
         for url in old_links:
             del self.link_database[url]
+            self.log.debug(f"Removed old link from database: {url}")
 
     def doPrivmsg(self, irc, msg):
         """Handle incoming messages and check for reposts."""
         channel = msg.args[0]
-        self.log.debug(f"Processing message in channel: {channel}")
         
         if irc.isChannel(channel) and channel == self.registryValue('channel'):
             text = msg.args[1]
@@ -88,10 +88,15 @@ class RepostCount(callbacks.Plugin):
                         self.user_repost_count[nick] = self.user_repost_count.get(nick, 0) + 1
                         
                         irc.reply(f"That link was already posted by {original_poster} {int(hours)}h {int(minutes)}m ago. Repost count for {nick} is now {self.user_repost_count[nick]}.", prefixNick=False)
+                        
+                        # Log the repost
+                        self.log.info(f"Repost detected: {nick} reposted {clean_url} originally posted by {original_poster}")
                     else:
                         self.link_database[clean_url] = (nick, current_time)
+                        self.log.debug(f"Updated timestamp for existing link: {clean_url} posted by {nick}")
                 else:
                     self.link_database[clean_url] = (nick, current_time)
+                    self.log.debug(f"Added new link to database: {clean_url} posted by {nick}")
 
                 self.save_data()
 
