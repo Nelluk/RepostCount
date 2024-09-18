@@ -11,6 +11,7 @@ import re
 from urllib.parse import urlparse, urlunsplit
 from supybot import registry
 import pprint  # For pretty printing in debug logs
+import supybot.ircdb as ircdb
 
 class RepostCount(callbacks.Plugin):
     """
@@ -149,6 +150,45 @@ class RepostCount(callbacks.Plugin):
             irc.reply(" ".join(leaderboard), prefixNick=False)
 
     reposters = wrap(reposters, [optional('text')])
+
+    def purge(self, irc, msg, args, option):
+        """[<nickname>|all]
+
+        Purges the entire repost list, or the repost count for a specific nickname. 
+        Limited to the bot owner.
+        """
+        if not ircdb.checkCapability(msg.prefix, 'owner'):
+            irc.error("This command is limited to the bot owner.", Raise=True)
+        
+        if option == 'all':
+            self.user_repost_count.clear()
+            self.link_database.clear()
+            irc.reply("All repost data has been purged.")
+        elif option:
+            if option in self.user_repost_count:
+                del self.user_repost_count[option]
+                irc.reply(f"Repost count for {option} has been purged.")
+            else:
+                irc.error(f"No repost data found for {option}.")
+        else:
+            irc.error("Please specify 'all' or a nickname to purge.")
+        
+        self.save_data()
+
+    purge = wrap(purge, ['owner', optional('text')])
+
+    def repost(self, irc, msg, args, nick):
+        """<nickname>
+
+        Shows the current repost count for the specified nickname.
+        """
+        if nick in self.user_repost_count:
+            count = self.user_repost_count[nick]
+            irc.reply(f"{nick} has caused {count} repost{'s' if count != 1 else ''}.")
+        else:
+            irc.reply(f"{nick} has not caused any reposts.")
+
+    repost = wrap(repost, ['text'])
 
 Class = RepostCount
 

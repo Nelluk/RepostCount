@@ -59,6 +59,23 @@ User6 has caused 1 repost, currently ranked 12 among reposters.
 User7 has not caused any reposts.
 ```
 
+### @repost <nick>
+
+Shows the current repost count for the specified nickname.
+
+Usage:
+```
+
+@repost <nick>
+```
+
+Example output:
+```
+
+User1 has caused 10 reposts.
+User2 has not caused any reposts.
+```
+
 ## License
 
 This plugin is licensed under the MIT License.
