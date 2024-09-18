@@ -134,9 +134,9 @@ class RepostCount(callbacks.Plugin):
             if nick.lower() in case_insensitive_dict:
                 original_nick, count = case_insensitive_dict[nick.lower()]
                 rank = next(i for i, (user, _) in enumerate(sorted_reposters, 1) if user.lower() == nick.lower())
-                irc.reply(f"{original_nick} has caused {count} repost{'s' if count != 1 else ''}, currently ranked {rank} among reposters.", prefixNick=False)
+                irc.reply(f"{original_nick} has committed {count} repost{'s' if count != 1 else ''}, currently ranked {rank} among reposters.", prefixNick=False)
             else:
-                irc.reply(f"{nick} has not caused any reposts.", prefixNick=False)
+                irc.reply(f"{nick} has not been caught linking any reposts.", prefixNick=False)
         else:
             # Get the top 15 reposters
             top_reposters = sorted_reposters[:15]
