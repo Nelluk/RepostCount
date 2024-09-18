@@ -20,22 +20,33 @@ class RepostCount(callbacks.Plugin):
     def __init__(self, irc):
         self.__parent = super(RepostCount, self)
         self.__parent.__init__(irc)
-        self.link_database = {}  # Stores links and their original posters
         self.filename = conf.supybot.directories.data.dirize(self.name() + '.db')
-        self.user_repost_count = self.load_data()  # Loads existing repost counts
+        self.link_filename = conf.supybot.directories.data.dirize(self.name() + '_links.db')
+        self.user_repost_count, self.link_database = self.load_data()  # Loads existing repost counts and link database
 
     def load_data(self):
-        """Load the user repost count data from a file."""
+        """Load the user repost count and link database from files."""
         try:
             with open(self.filename, 'r') as f:
-                return eval(f.read())
+                user_repost_count = eval(f.read())
         except:
-            return {}  # Return an empty dict if file doesn't exist or is invalid
+            user_repost_count = {}
+
+        try:
+            with open(self.link_filename, 'r') as f:
+                link_database = eval(f.read())
+        except:
+            link_database = {}
+
+        return user_repost_count, link_database
 
     def save_data(self):
-        """Save the user repost count data to a file."""
+        """Save the user repost count and link database to files."""
         with open(self.filename, 'w') as f:
             f.write(repr(self.user_repost_count))
+        
+        with open(self.link_filename, 'w') as f:
+            f.write(repr(self.link_database))
 
     def die(self):
         """Save data when the plugin is unloaded."""
@@ -62,6 +73,9 @@ class RepostCount(callbacks.Plugin):
         for url in old_links:
             del self.link_database[url]
             self.log.debug(f"Removed old link from database: {url}")
+        
+        if old_links:
+            self.save_data()  # Save after purging
 
     def doPrivmsg(self, irc, msg):
         """Handle incoming messages and check for reposts."""
@@ -98,11 +112,7 @@ class RepostCount(callbacks.Plugin):
                     self.link_database[clean_url] = (nick, current_time)
                     self.log.debug(f"Added new link to database: {clean_url} posted by {nick}")
 
-                self.save_data()
-
-        # Debug logging (only once per message processing)
-        self.log.debug(f"link_database: {pprint.pformat(self.link_database)}")
-        self.log.debug(f"user_repost_count: {pprint.pformat(self.user_repost_count)}")
+                self.save_data()  # Save after any modifications
 
     def reposters(self, irc, msg, args, nick=None):
         """[<nick>]
