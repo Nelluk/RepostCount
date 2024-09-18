@@ -182,9 +182,12 @@ class RepostCount(callbacks.Plugin):
 
         Shows the current repost count for the specified nickname.
         """
-        if nick in self.user_repost_count:
-            count = self.user_repost_count[nick]
-            irc.reply(f"{nick} has caused {count} repost{'s' if count != 1 else ''}.")
+        # Create a case-insensitive dictionary for lookup
+        case_insensitive_dict = {k.lower(): (k, v) for k, v in self.user_repost_count.items()}
+        
+        if nick.lower() in case_insensitive_dict:
+            original_nick, count = case_insensitive_dict[nick.lower()]
+            irc.reply(f"{original_nick} has caused {count} repost{'s' if count != 1 else ''}.")
         else:
             irc.reply(f"{nick} has not caused any reposts.")
 
