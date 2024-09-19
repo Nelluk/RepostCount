@@ -9,7 +9,7 @@ RepostCount is a plugin for the Limnoria IRC bot that tracks and counts reposts 
 - Tracks posted links in a specified channel
 - Detects when a link is reposted
 - Counts the number of reposts per user
-- Ignores query parameters in URLs to avoid false positives
+- Ignores query parameters in URLs from certain domains to avoid false positives
 - Automatically purges links older than 12 hours from its database
 
 ## Installation

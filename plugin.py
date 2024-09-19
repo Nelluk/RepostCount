@@ -10,7 +10,7 @@ import time
 import re
 from urllib.parse import urlparse, urlunsplit, parse_qs, urlencode
 from supybot import registry
-import pprint  # For pretty printing in debug logs
+# import pprint  # For pretty printing in debug logs
 import supybot.ircdb as ircdb
 
 class RepostCount(callbacks.Plugin):
@@ -24,7 +24,7 @@ class RepostCount(callbacks.Plugin):
         self.filename = conf.supybot.directories.data.dirize(self.name() + '.db')
         self.link_filename = conf.supybot.directories.data.dirize(self.name() + '_links.db')
         self.user_repost_count, self.link_database = self.load_data()  # Loads existing repost counts and link database
-        self.domains_with_params = ['youtube.com', 'youtu.be']  # Add more domains as needed
+        self.domains_ignore_params = ['twitter.com', 'x.com', 'twimg.com', 'nytimes.com']
 
     def load_data(self):
         """Load the user repost count and link database from files."""
@@ -56,25 +56,16 @@ class RepostCount(callbacks.Plugin):
         self.__parent.die()
 
     def _strip_url_params(self, url):
-        """Remove query parameters from a URL, except for specified domains."""
+        """Remove query parameters from URLs of specified domains."""
         parsed = urlparse(url)
         domain = parsed.netloc.lower()
         
-        if any(d in domain for d in self.domains_with_params):
-            # For specified domains, keep only essential parameters
-            query_params = parse_qs(parsed.query)
-            essential_params = {}
-            
-            if 'youtube.com' in domain or 'youtu.be' in domain:
-                # Keep only the 'v' parameter for YouTube
-                if 'v' in query_params:
-                    essential_params['v'] = query_params['v'][0]
-            
-            new_query = urlencode(essential_params)
-            clean_url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, new_query, ''))
-        else:
-            # For other domains, remove all parameters
+        if any(d in domain for d in self.domains_ignore_params):
+            # For specified domains, remove all parameters
             clean_url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, '', ''))
+        else:
+            # For other domains, keep all parameters
+            clean_url = url
         
         return clean_url
 
