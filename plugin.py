@@ -60,7 +60,7 @@ class RepostCount(callbacks.Plugin):
         parsed = urlparse(url)
         domain = parsed.netloc.lower()
         
-        if any(d in domain for d in self.domains_ignore_params):
+        if domain in self.domains_ignore_params:
             # For specified domains, remove all parameters
             clean_url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, '', ''))
         else:
