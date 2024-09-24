@@ -62,11 +62,13 @@ class RepostCount(callbacks.Plugin):
         
         if domain in self.domains_ignore_params:
             # For specified domains, remove all parameters
+            self.log.debug(f"Stripping params from URL: {url}")
             clean_url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, '', ''))
         else:
             # For other domains, keep all parameters
             clean_url = url
         
+        self.log.debug(f"Parsed URL: {parsed}, Domain: {domain}, Clean URL: {clean_url}")       
         return clean_url
 
     def _extract_url(self, text):
