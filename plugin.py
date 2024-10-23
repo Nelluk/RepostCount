@@ -59,8 +59,9 @@ class RepostCount(callbacks.Plugin):
         """Remove query parameters from URLs of specified domains."""
         parsed = urlparse(url)
         domain = parsed.netloc.lower()
+        base_domain = domain.removeprefix('www.')
         
-        if domain in self.domains_ignore_params:
+        if base_domain in self.domains_ignore_params:
             # For specified domains, remove all parameters
             self.log.debug(f"Stripping params from URL: {url}")
             clean_url = urlunsplit(('http', parsed.netloc.lower(), parsed.path.lower(), '', ''))
